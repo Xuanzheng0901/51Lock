@@ -3,7 +3,23 @@
 
 #define AT24C02_ADDRESS 0xA0
 
-void epromWrite(unsigned char WordAddress, Data)
+void eepromWritePage(unsigned char addr, unsigned char* Data, unsigned char length)
+{
+	unsigned char i;
+	iicStart();
+	iicSendByte(AT24C02_ADDRESS);
+	iicRecvAck();
+	iicSendByte(addr);
+	iicRecvAck();
+	for(i = 0; i < length; i++)
+	{
+		iicSendByte(Data[i]);
+		iicRecvAck();
+	}
+	iicStop();
+}
+
+void eepromWriteOneData(unsigned char WordAddress, unsigned char Data)
 {
 	iicStart();
 	iicSendByte(AT24C02_ADDRESS);

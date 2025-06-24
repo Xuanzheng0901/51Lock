@@ -7,9 +7,9 @@
 // sbit LCD_RS=P2^6;
 // sbit LCD_RW=P2^5;
 // sbit LCD_EN=P2^7;
-sbit LCD_RS = P2 ^ 5;
-sbit LCD_RW = P2 ^ 6;
-sbit LCD_EN = P2 ^ 4;
+sbit LCD_RS = P2^5;
+sbit LCD_RW = P2^6;
+sbit LCD_EN = P2^7;
 // 函数定义：
 /**
  * @brief  LCD1602延时函数，12MHz调用可延时1ms

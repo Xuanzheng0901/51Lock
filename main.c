@@ -4,6 +4,7 @@
 #include <Key.h>
 #include <UART.h>
 #include <string.h>
+#include <AT24C02.h>
 
 #define PWD_SIZE  6
 
@@ -108,7 +109,6 @@ void setPassword(void)
 {
 	unsigned char pwdInputCount = 0;
 	unsigned char inputKey = 0;
-	unsigned char i;
 
 	LCD_Clear();
 	if(pwdSet[0] == 0 && pwdSet[1] == 0 && pwdSet[2] == 0 && pwdSet[3] == 0 && pwdSet[4] == 0 && pwdSet[5] == 0)//如果密码没被设置过,就进入设置密码模式
@@ -150,6 +150,10 @@ void setPassword(void)
 				// for(i = 0; i < 6; i++)
 				// 	UART_S(pwdSet[i]);//串口发送设置的密码
 				// TR1 = 0;
+				eepromWriteOneData(0x00, 0xcc);
+				Delay100ms(1);
+				eepromWritePage(0x10, pwdSet, 6);
+
 				flowingLED();
 
 				// TODO: 存入eeprom 
@@ -226,6 +230,9 @@ void lockMain(void)
 				{
 					if(strncmp(pwdInput, pwdSet, 6) == 0)
 					{
+						memset(pwdInput, 0, PWD_SIZE);
+						pwdInput[0] = '_';
+						pwdInputCount = 0;
 						isUnlocked = 1;
 						return;
 					}
@@ -275,10 +282,11 @@ unsigned char unlocked(void)
 {
 	unsigned char keyInput;
 	LCD_Clear();
-	LCD_ShowString(1, 1, "Password right!");
+	
 	
 	while(1)
 	{
+		LCD_ShowString(1, 1, "Password right!");
 		keyInput = Matrix();
 		if(keyInput == 116)
 		{
@@ -296,8 +304,18 @@ unsigned char unlocked(void)
 
 void main()
 {
+	unsigned char i;
 	Timer1_Init();
 	LCD_Init();
+	if(eepromRead(0x00) == 0xcc)
+	{
+		for(i = 0; i < 6; i++)
+		{
+			pwdSet[i] = eepromRead(0x10 + i);
+			Delay1ms(1);
+		}
+		isSettingMode = 0;
+	}
 	while(1)
 	{
 		LCD_Clear();
