@@ -1,7 +1,6 @@
 #include "UART.h"
 #include <REGX52.H>
 
-
 void Uart1_Init(void)	//28800bps@11.0592MHz
 {
 	PCON |= 0x80;		//使能波特率倍速位SMOD
@@ -21,4 +20,3 @@ void UART_S(unsigned char x)
 	while(TI == 0);
 	TI = 0;
 }
-

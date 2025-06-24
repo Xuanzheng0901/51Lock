@@ -1,7 +1,7 @@
 #ifndef __DELAY_H__
 #define __DELAY_H__
 #include <REGX52.H>
-#include <intrins.h>
+#include <INTRINS.H>
 
 void Delay100ms(unsigned char x);
 
