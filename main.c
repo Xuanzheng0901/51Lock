@@ -8,7 +8,7 @@
 
 #define PWD_SIZE  6
 
-static const char str1[] = "Long Press Key13 To Reset Password ";
+static const char str1[] = "Long Press Key16 To Reset Password ";
 unsigned char isUnlocked = 0, isSettingMode = 1;
 char pwdSet[PWD_SIZE+1] = {0};
 char pwdInput[PWD_SIZE+1] = {0};
@@ -93,7 +93,7 @@ void timer1ISR(void) interrupt 3
 	}
 }
 
-void Timer1_Init(void)		//50毫秒@11.0592MHz
+void timer1Init(void)		//50毫秒@11.0592MHz
 {
 	TMOD &= 0x0F;			//设置定时器模式
 	TMOD |= 0x10;			//设置定时器模式
@@ -109,7 +109,7 @@ void setPassword(void)
 {
 	unsigned char pwdInputCount = 0;
 	unsigned char inputKey = 0;
-
+	static unsigned char i;
 	LCD_Clear();
 	if(pwdSet[0] == 0 && pwdSet[1] == 0 && pwdSet[2] == 0 && pwdSet[3] == 0 && pwdSet[4] == 0 && pwdSet[5] == 0)//如果密码没被设置过,就进入设置密码模式
 	{
@@ -146,10 +146,10 @@ void setPassword(void)
 			{
 				LCD_Clear();
 				LCD_ShowString(1, 1, "OK!");
-				// Uart1_Init();
-				// for(i = 0; i < 6; i++)
-				// 	UART_S(pwdSet[i]);//串口发送设置的密码
-				// TR1 = 0;
+				Uart1_Init();
+				for(i = 0; i < 6; i++)
+					UART_S(pwdSet[i]);//串口发送设置的密码
+				timer1Init();
 				eepromWriteOneData(0x00, 0xcc);
 				Delay100ms(1);
 				eepromWritePage(0x10, pwdSet, 6);
@@ -307,7 +307,7 @@ unsigned char unlocked(void)
 void main()
 {
 	unsigned char i;
-	Timer1_Init();
+	timer1Init();
 	LCD_Init();
 	if(eepromRead(0x00) == 0xcc)
 	{
