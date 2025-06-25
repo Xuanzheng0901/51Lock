@@ -5,7 +5,6 @@
 static unsigned char key = 0;
 static unsigned char timer0Count = 0;
 static unsigned char timer1Status;
-// extern uchar timer1Count;
 
 void beep()
 {
@@ -43,14 +42,13 @@ static void __keyboardScan(unsigned char line, unsigned char needLongPress)
 		{
 			beep();
 			// timer1Count = 0;
+			timer1Status = TR1;
+			TR1 = 0;
 			if((1 << col) & needLongPress)
 			{
-				timer1Status = TR1;
-				TR1 = 0;
 				timer0Init();//启动定时器
 				while((P3 & (0x10 << (col))) == 0 && timer0Count < 20);//定时器计满或松手时打断
 				timer0Reset();
-				TR1 = timer1Status;
 			}
 			else
 				while((P3 & (0x10 << (col))) == 0);
@@ -61,9 +59,11 @@ static void __keyboardScan(unsigned char line, unsigned char needLongPress)
 				timer0Count = 0;
 				key = 4 * line + col + 101;
 				while((P3 & (0x10 << col)) == 0);
+				TR1 = timer1Status;
 				return;
 			}
 			Delay1ms(20);
+			TR1 = timer1Status;
 			key = 4 * line + col + 1;
 		}
 	}
@@ -71,15 +71,10 @@ static void __keyboardScan(unsigned char line, unsigned char needLongPress)
 
 static void __Matrix(void)
 {
-	unsigned char line, key = 0;
+	unsigned char line;
 	for(line = 0; line < 4; line++)
 	{
-		if(line == 3)
-			__keyboardScan(line, 0xF);
-		else if(line == 2)
-			__keyboardScan(line, 0xF);
-		else
-			__keyboardScan(line, 0xF4);
+		__keyboardScan(line, 0xF);
 		if(key >= 100)
 			return;
 	}

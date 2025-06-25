@@ -125,16 +125,16 @@ void setPassword(void)
 		inputKey = Matrix();
 		if(inputKey)
 		{
-			if(inputKey >= 1 && inputKey <= 10 && pwdInputCount < 6)
+			if(inputKey >= 1 && inputKey <= 14 && pwdInputCount < 6)
 			{
-				pwdSet[pwdInputCount] = inputKey - 1 + '0';
+				pwdSet[pwdInputCount] = inputKey < 11 ? (inputKey - 1 + '0') : (inputKey - 11 + 'A');
 				pwdInputCount++;
 				if(pwdInputCount < 6)
 					pwdSet[pwdInputCount] = '_';
 				LCD_ClearLine(2);
 				LCD_ShowString(2, 1, pwdSet);
 			}
-			else if(inputKey == 11 && pwdInputCount > 0)//退格
+			else if(inputKey == 15 && pwdInputCount > 0)//退格
 			{
 				pwdSet[pwdInputCount] = 0;
 				pwdInputCount--;
@@ -142,7 +142,7 @@ void setPassword(void)
 				LCD_ClearLine(2);
 				LCD_ShowString(2, 1, pwdSet);
 			}
-			else if(inputKey == 12 &&  pwdInputCount == 6)//确认
+			else if(inputKey == 16 &&  pwdInputCount == 6)//确认
 			{
 				LCD_Clear();
 				LCD_ShowString(1, 1, "OK!");
@@ -160,7 +160,7 @@ void setPassword(void)
 
 				isSettingMode = 0;//标志退出设置模式
 			}
-			else if(inputKey == 12 && pwdInputCount != 6)//如果没输够六位
+			else if(inputKey == 16 && pwdInputCount != 6)//如果没输够六位
 			{
 				LCD_Clear();
 				LCD_ShowString(1, 1, "Too short!");
@@ -169,7 +169,7 @@ void setPassword(void)
 				LCD_ShowString(1, 1, "Setting Password:");
 				LCD_ShowString(2, 1, pwdSet);
 			}
-			else if(inputKey == 111 && pwdInputCount != 0)//长按清除
+			else if(inputKey == 115 && pwdInputCount != 0)//长按清除
 			{
 				memset(pwdSet, 0, PWD_SIZE);
 				pwdSet[0] = '_';
@@ -199,15 +199,15 @@ void lockMain(void)
 		inputKey = Matrix();
 		if(inputKey)
 		{
-			if(inputKey >= 1 && inputKey <= 10 && pwdInputCount < 6)
+			if(inputKey >= 1 && inputKey <= 14 && pwdInputCount < 6)
 			{
-				pwdInput[pwdInputCount] = inputKey - 1 + '0';
+				pwdInput[pwdInputCount] = inputKey < 11 ? (inputKey - 1 + '0') : (inputKey - 11 + 'A');
 				pwdInputCount++;
 				if(pwdInputCount < 6)
 					pwdInput[pwdInputCount] = '_';
 				LCD_ShowString(2, 1, pwdInput);
 			}
-			else if(inputKey == 11 && pwdInputCount > 0)//退格
+			else if(inputKey == 15 && pwdInputCount > 0)//退格
 			{
 				pwdInput[pwdInputCount] = 0;
 				pwdInputCount--;
@@ -215,7 +215,7 @@ void lockMain(void)
 				LCD_ClearLine(2);
 				LCD_ShowString(2, 1, pwdInput);
 			}
-			else if(inputKey == 12)//确认
+			else if(inputKey == 16)//确认
 			{
 				if(pwdInputCount < 6)
 				{
@@ -265,7 +265,7 @@ void lockMain(void)
 				LCD_ClearLine(2);
 				LCD_ShowString(2, 1, pwdInput);
 			}
-			else if(inputKey == 111 && pwdInputCount != 0)//长按清除
+			else if(inputKey == 115 && pwdInputCount != 0)//长按清除
 			{
 				memset(pwdInput, 0, PWD_SIZE);
 				pwdInput[0] = '_';
@@ -283,10 +283,12 @@ unsigned char unlocked(void)
 	unsigned char keyInput;
 	LCD_Clear();
 	
-	
+	LCD_ShowString(1, 1, "Password right!");
+	LCD_ShowString(1, 1, "Password right!");
+
 	while(1)
 	{
-		LCD_ShowString(1, 1, "Password right!");
+		
 		keyInput = Matrix();
 		if(keyInput == 116)
 		{
