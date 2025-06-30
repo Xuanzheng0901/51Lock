@@ -38,9 +38,8 @@ static void __keyboardScan(unsigned char line)
 	{
 		if((P3 & (0x10 << col)) == 0)
 		{
-			TR1 = 0;
 			beep();
-			
+			TR1 = 0;
 			timer0Init(); //启动定时器
 			while((P3 & (0x10 << (col))) == 0 && timer0Count < 20); //定时器计满或松手时打断
 			timer0Reset();
@@ -56,9 +55,8 @@ static void __keyboardScan(unsigned char line)
 			}
 			timer0Count = 0;
 			Delay1ms(20);
-			
-			key = 4 * line + col + 1;
 			TR1 = 1;
+			key = 4 * line + col + 1;
 		}
 	}
 }
