@@ -186,7 +186,7 @@
         </Utilities>
         <Target51>
           <Target51Misc>
-            <MemoryModel>2</MemoryModel>
+            <MemoryModel>0</MemoryModel>
             <RTOS>0</RTOS>
             <RomSize>2</RomSize>
             <DataHold>0</DataHold>
@@ -233,7 +233,7 @@
               <RCB>
                 <Type>0</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0xffff</Size>
+                <Size>0x10000</Size>
               </RCB>
               <RXB>
                 <Type>0</Type>
@@ -397,14 +397,14 @@
               <FilePath>.\Key.h</FilePath>
             </File>
             <File>
-              <FileName>Nixie.c</FileName>
+              <FileName>LCD1602.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Nixie.c</FilePath>
+              <FilePath>.\LCD1602.c</FilePath>
             </File>
             <File>
-              <FileName>Nixie.h</FileName>
+              <FileName>LCD1602.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\Nixie.h</FilePath>
+              <FilePath>.\LCD1602.h</FilePath>
             </File>
             <File>
               <FileName>main.c</FileName>
