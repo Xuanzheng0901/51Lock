@@ -6,6 +6,7 @@
 #include <UART.h>
 #include <string.h>
 #include <AT24C02.h>
+#include <Motor.h>
 
 #define PWD_SIZE  8
 
@@ -19,6 +20,7 @@ extern unsigned char nixieBuffer[8];
 void flowingLED(void)
 {
 	unsigned char i;
+	ET1 = 0;
 	P1 = 0x7f;
 	for(i = 0; i < 7; i++)//流水灯
 	{
@@ -36,6 +38,7 @@ void flowingLED(void)
 	}
 	P1 = 0x7f;
 	Delay100ms(3);//流水灯
+	ET1 = 1;
 }
 
 void breathingLEDWhileWaiting(void)
@@ -44,9 +47,9 @@ void breathingLEDWhileWaiting(void)
 	uchar direct = 0;
 	uchar secondsToWait = 30;
 
+	ET1 = 0;
 	while(secondsToWait--)//呼吸灯
 	{
-		//LCD_ShowNum(2, 13, secondsToWait, 2);
 		Nixie(secondsToWait + '0', 1);
 		for(i = 0; i < 100; i++)
 		{
@@ -60,10 +63,18 @@ void breathingLEDWhileWaiting(void)
 		}
 		direct = !direct;
 	}
+	ET1 = 1;
 }
 
 void blinkingLED(void)
 {
+	ET1 = 0;
+	P0 = 0x07;
+	P2_6 = 1;
+	P2_6 = 0;
+	P0 = 0x0;
+	P2_7 = 1;
+	P2_7 = 0;
 	P1=0;
 	Delay100ms(3);
 	P1=~P1;
@@ -76,6 +87,7 @@ void blinkingLED(void)
 	Delay100ms(3);
 	P1=~P1;
 	Delay100ms(3);
+	ET1 = 0;
 }
 
 void timer1Init(void)		//50毫秒@11.0592MHz
@@ -106,18 +118,18 @@ void setPassword(void)
 	unsigned char pwdInputCount = 0;
 	unsigned char inputKey = 0;
 	static unsigned char i;
-	//LCD_Clear();
 	if(!isPwdSet())//如果密码没被设置过,就进入设置密码模式
 	{
 		isSettingMode = 1;
 		pwdSet[0] = '_';
 	}
+	else
+		return;
 	nixieShowString(pwdSet);
-	//LCD_ShowString(1, 1, "Setting Password");
-	//LCD_ShowString(2, 1, pwdSet);+
-	nixieShowString(pwdSet);
+	//nixieShowString(pwdSet);
 	while(isSettingMode)//进入设置密码模式
 	{
+		
 		P1 = (0xFF >> pwdInputCount) & 0xFE;//有几位就亮几个, 最后一个灯亮标志设置密码环节
 		inputKey = Matrix();
 		if(inputKey)
@@ -128,28 +140,23 @@ void setPassword(void)
 				pwdInputCount++;
 				if(pwdInputCount < PWD_SIZE)
 					pwdSet[pwdInputCount] = '_';
-				//LCD_ClearLine(2);
 				nixieShowString(pwdSet);
-				//LCD_ShowString(2, 1, pwdSet);
 			}
 			else if(inputKey == 15 && pwdInputCount > 0)//退格
 			{
 				pwdSet[pwdInputCount] = 0;
 				pwdInputCount--;
 				pwdSet[pwdInputCount] = '_';
-				//LCD_ClearLine(2);
-				//LCD_ShowString(2, 1, pwdSet);
 				nixieShowString(pwdSet);
 
 			}
 			else if(inputKey == 16 &&  pwdInputCount == PWD_SIZE)//确认
 			{
-				//LCD_Clear();
-				//LCD_ShowString(1, 1, "OK!");
 				Uart1_Init();
+				ET1 = 0;
 				for(i = 0; i < PWD_SIZE; i++)
 					UART_S(pwdSet[i]);//串口发送设置的密码
-				timer1Init();
+				
 				eepromWriteOneData(0x00, 0xcc);
 				Delay100ms(1);
 				eepromWritePage(0x10, pwdSet, PWD_SIZE);
@@ -159,15 +166,11 @@ void setPassword(void)
 				// TODO: 存入eeprom 
 
 				isSettingMode = 0;//标志退出设置模式
+				ET1 = 1;timer1Init();
 			}
 			else if(inputKey == 16 && pwdInputCount != PWD_SIZE)//如果没输够六位
 			{
-				//LCD_Clear();
-				//LCD_ShowString(1, 1, "Too short!");
-				Delay100ms(20);
-				// LCD_Clear();
-				// LCD_ShowString(1, 1, "Setting Password:");
-				// LCD_ShowString(2, 1, pwdSet);
+				//Delay100ms(20);
 				nixieShowString(pwdSet);
 			}
 			else if(inputKey == 115 && pwdInputCount != 0)//长按清除
@@ -175,13 +178,11 @@ void setPassword(void)
 				memset(pwdSet, 0, PWD_SIZE);
 				pwdSet[0] = '_';
 				pwdInputCount = 0;
-				//LCD_ClearLine(2);
-				//LCD_ShowString(2, 1, pwdSet);
+
 				nixieShowString(pwdSet);
 			}
 		}
 	}
-	//LCD_Clear();
 }
 
 void lockMain(void)
@@ -190,10 +191,7 @@ void lockMain(void)
 	unsigned char inputKey = 0;
 	unsigned char errorTime = 0;
 
-	//LCD_Clear();
 	pwdInput[0] = '_';
-	//(1, 1, "Input Password:");
-	//LCD_ShowString(2, 1, pwdInput);
 	nixieShowString(pwdInput);
 
 	
@@ -209,29 +207,22 @@ void lockMain(void)
 				pwdInputCount++;
 				if(pwdInputCount < PWD_SIZE)
 					pwdInput[pwdInputCount] = '_';
-	nixieShowString(pwdInput);
-				//LCD_ShowString(2, 1, pwdInput);
+				nixieShowString(pwdInput);
 			}
 			else if(inputKey == 15 && pwdInputCount > 0)//退格
 			{
 				pwdInput[pwdInputCount] = 0;
 				pwdInputCount--;
 				pwdInput[pwdInputCount] = '_';
-				//LCD_ClearLine(2);
-	nixieShowString(pwdInput);
-				//LCD_ShowString(2, 1, pwdInput);
+				nixieShowString(pwdInput);
 			}
 			else if(inputKey == 16)//确认
 			{
+				ET1 = 0;
 				if(pwdInputCount < PWD_SIZE)
 				{
-					//LCD_Clear();
-					//LCD_ShowString(1, 1, "Too short!");
 					Delay100ms(20);
-					//LCD_Clear();
-					//LCD_ShowString(1, 1, "Input Password:");
-	nixieShowString(pwdInput);
-					//LCD_ShowString(2, 1, pwdInput);
+					nixieShowString(pwdInput);
 				}
 				else if(pwdInputCount == PWD_SIZE)
 				{
@@ -240,74 +231,67 @@ void lockMain(void)
 						memset(pwdInput, 0, PWD_SIZE);
 						pwdInput[0] = '_';
 						pwdInputCount = 0;
+						//nixieShowString("66666666");
 						isUnlocked = 1;
+						ET1 = 1;
 						return;
 					}
 					else
 					{
 						errorTime++;
-						//LCD_Clear();
 						if(errorTime >= 3)
 						{
-							//LCD_ShowString(1, 1, "Too Many Errors!");
-							//LCD_ShowString(2, 1, "Retry After   s!");
 							breathingLEDWhileWaiting();
-							//LCD_Clear();
 							errorTime--;
 						}
 						else
 						{
-							//LCD_ShowString(1 ,1, "Password Error!");
-							//LCD_ShowString(2, 1, "You Can Retry:");
-							//LCD_ShowNum(2, 15, 3 - errorTime, 1);
 							blinkingLED();
-							
 						}
 					}
 				}
 				memset(pwdInput, 0, PWD_SIZE);
 				pwdInput[0] = '_';
 				pwdInputCount = 0;
-				//LCD_ShowString(1, 1, "Input Password:");
-				//LCD_ClearLine(2);
-	nixieShowString(pwdInput);
-				//LCD_ShowString(2, 1, pwdInput);
+				nixieShowString(pwdInput);
+				ET1 = 1;
 			}
 			else if(inputKey == 115 && pwdInputCount != 0)//长按清除
 			{
 				memset(pwdInput, 0, PWD_SIZE);
 				pwdInput[0] = '_';
 				pwdInputCount = 0;
-				//LCD_ClearLine(2);
-	nixieShowString(pwdInput);
-				//LCD_ShowString(2, 1, pwdInput);
+				nixieShowString(pwdInput);
 			}
 		}
 	}
-	//LCD_Clear();
 }
 
 unsigned char unlocked(void)
 {
 	unsigned char keyInput;
-	//LCD_Clear();
-	
-	//LCD_ShowString(1, 1, "Password right!");
-	//LCD_ShowString(1, 1, "Password right!");
-
+	ET1 = 1;
+	motorBackward90();
+	P0 = 0x6D;
+	P2_6 = 1;
+	P2_6 = 0;
+	P0 = 0;
+	P2_7 = 1;
+	P2_7 = 0;
 	while(1)
 	{
-		
 		keyInput = Matrix();
 		if(keyInput == 116)
 		{
 			memset(pwdSet, 0, PWD_SIZE);
 			isUnlocked = 0;
+			motorForward90();
 			return 1; //chongshemima
 		}
 		if(keyInput == 115)//长按退格键关锁
 		{
 			isUnlocked = 0;
+			motorForward90();
 			return 0;
 		}
 	}
@@ -316,9 +300,10 @@ unsigned char unlocked(void)
 void main()
 {
 	unsigned char i;
+	motorInit();
 	timer1Init();
-	//LCD_Init();
-	if(eepromRead(0x00) == 0xcc)
+	
+	if(eepromRead(0x00) == 0x00)
 	{
 		for(i = 0; i < 6; i++)
 		{
@@ -329,9 +314,9 @@ void main()
 	}
 	while(1)
 	{
-		//LCD_Clear();
 		setPassword();
 		lockMain();
 		isSettingMode = unlocked();
+		//ET1 = 1;
 	}
 }

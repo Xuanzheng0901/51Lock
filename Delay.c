@@ -37,7 +37,6 @@ void Delay10us(unsigned char x)	//@11.0592MHz
 {
 	while(x--)
 	{
-		
 		unsigned char data i;
 
 		i = 2;

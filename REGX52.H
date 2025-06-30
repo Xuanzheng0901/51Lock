@@ -222,4 +222,8 @@ Interrupt Address = (Number * 8) + 3
 #define TF2_VECTOR	5  /* 0x2B Timer 2 */
 #define EX2_VECTOR	5  /* 0x2B External Interrupt 2 */
 
+
+sbit P4_4=0xEC;
+sbit P4_6=0xEE;
+
 #endif

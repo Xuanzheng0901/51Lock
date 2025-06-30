@@ -48,7 +48,7 @@ static void __keyboardScan(unsigned char line)
 			if(timer0Count >= 20) //判断是否为长按
 			{
 				beep();
-				
+				timer0Count = 0;
 				key = 4 * line + col + 101;
 				while((P3 & (0x10 << col)) == 0);
 				TR1 = 1;
